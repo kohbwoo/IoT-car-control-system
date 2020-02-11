@@ -2,23 +2,13 @@
 
 const char* ssid     = "Koh 2G";
 const char* password = "PASSWORD";
-
-
 WiFiServer server(80);
-
 String header;
-
-
 String output5State = "off";
 String output4State = "off";
-
-
-const int output5 = 5;
-const int output4 = 4;
-
-
+const int output5 = 5; //door
+const int output4 = 4; //A/C
 unsigned long currentTime = millis();
-
 unsigned long previousTime = 0; 
 // Define timeout time in milliseconds
 const long timeoutTime = 2000;
@@ -28,10 +18,8 @@ void setup() {
   
   pinMode(output5, OUTPUT);
   pinMode(output4, OUTPUT);
-  // Set outputs to LOW
   digitalWrite(output5, LOW);
   digitalWrite(output4, LOW);
-
   Serial.print("Connecting to ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
@@ -46,9 +34,9 @@ void setup() {
   server.begin();
 }
 
-void loop(){
-  WiFiClient client = server.available();   
 
+void loop(){
+  WiFiClient client = server.available();
   if (client) {                            
     Serial.println("New Client.");       
     String currentLine = "";               
@@ -66,7 +54,6 @@ void loop(){
             client.println("Content-type:text/html");
             client.println("Connection: close");
             client.println();
-         
             if (header.indexOf("GET /5/on") >= 0) {
               Serial.println("GPIO 5 on");
               output5State = "on";
@@ -84,7 +71,6 @@ void loop(){
               output4State = "off";
               digitalWrite(output4, LOW);
             }
-            
             client.println("<!DOCTYPE html><html>");
             client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
             client.println("<link rel=\"icon\" href=\"data:,\">");
@@ -93,45 +79,36 @@ void loop(){
             client.println(".button { background-color: #195B6A; border: none; color: white; padding: 16px 40px;");
             client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
             client.println(".button2 {background-color: #77878A;}</style></head>");
-            
-          
             client.println("<body><h1>IoT Car control System</h1>");
-            client.println("<body><h6>made by koh byungwoo</h6>");
             
-          
             client.println("DOOR " + output5State + "</p>");
-          
             if (output5State=="off") {
               client.println("<p><a href=\"/5/on\"><button class=\"button\">ON</button></a></p>");
             } else {
               client.println("<p><a href=\"/5/off\"><button class=\"button button2\">OFF</button></a></p>");
             } 
-               
-            
             client.println("<p>A/C " + output4State + "</p>");
-           
             if (output4State=="off") {
               client.println("<p><a href=\"/4/on\"><button class=\"button\">ON</button></a></p>");
             } else {
               client.println("<p><a href=\"/4/off\"><button class=\"button button2\">OFF</button></a></p>");
             }
             client.println("</body></html>");
-            
-          
             client.println();
+            client.println("<body><h6>made by koh byungwoo</h6>");
         
             break;
-          } else { // if you got a newline, then clear currentLine
+            
+          } else { 
             currentLine = "";
           }
-        } else if (c != '\r') {  // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
+        } else if (c != '\r') {
+          currentLine += c;
         }
       }
     }
    
     header = "";
-
     client.stop();
     Serial.println("Client disconnected.");
     Serial.println("");
